@@ -22,15 +22,19 @@
   </div>
   <div id="prompt" class="hidden"></div>
   <div id="toast" class="hidden"></div>
+  <canvas id="confetti"></canvas>
 
   <!-- Başlangıç -->
   <div id="title" class="overlay">
-    <div class="card">
-      <div class="logo">∑ ∫ π √</div>
-      <h1>KAYIP FORMÜL</h1>
+    <div id="t-float"></div>
+    <div id="t-box">
+      <div id="t-eyebrow">ZAMAN YOLCULUĞU · MATEMATİK MACERASI</div>
+      <div id="t-logo"><span>∑</span><span>∫</span><span>π</span><span>√</span></div>
+      <h1 id="t-h1">KAYIP FORMÜL</h1>
+      <div id="t-eras"><span style="--c:#35d0c0">Bağdat · 820</span><span style="--c:#ffb347">Mısır · MÖ 2500</span><span style="--c:#b39ddb">İskenderiye · MÖ 240</span></div>
       <p class="tag">Matematik silindi. Zaman makinesi susuyor.<br />Üç çağa yolculuk et, formülü geri getir.</p>
-      <button id="btn-start" class="big">Yolculuğa Başla</button>
-      <p class="keys">WASD / Ok tuşları: yürü &nbsp;·&nbsp; E: konuş / kullan &nbsp;·&nbsp; Boşluk: devam</p>
+      <button id="btn-start" class="big">▶ Yolculuğa Başla</button>
+      <p class="keys">🔊 Ses açık önerilir &nbsp;·&nbsp; WASD: yürü &nbsp;·&nbsp; E: konuş / kullan &nbsp;·&nbsp; Boşluk: devam</p>
     </div>
   </div>
 
@@ -128,6 +132,6 @@
   </div>
 
   <div id="fade"></div>
-  <script type="module" src="js/main.js?v=41"></script>
+  <script type="module" src="js/main.js?v=43"></script>
 </body>
 </html>

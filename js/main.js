@@ -61,6 +61,15 @@ function ambience(name) {
   else { osc('sine', 110, 0.03); osc('sine', 110.8, 0.03); osc('triangle', 220, 0.012); wind(900, 0.5, 0.012, 0.2, 0.006); seq([523.3, 659.3, 784, 1046.5], 0.018, 2, 3.2, 5, 10, 1); }
   g.gain.setTargetAtTime(muted ? 0 : 1, now, 1.4);
 }
+
+/* ---------- Kutlama: konfeti ---------- */
+const cfc = $('confetti'), cfx = cfc.getContext('2d'); let cfp = [], cfRun = false;
+function confetti(n = 120, ox = 0.5, oy = 0.45, big = false) {
+  cfc.width = innerWidth; cfc.height = innerHeight;
+  const cols = ['#ffe08a', '#35d0c0', '#ff7d7d', '#7dd8ff', '#b39ddb', '#ffb347', '#7dffb0'];
+  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = (big ? 520 : 380) * (0.3 + Math.random() * 0.8); cfp.push({ x: ox * cfc.width, y: oy * cfc.height, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 260, r: Math.random() * 6.3, vr: (Math.random() - 0.5) * 14, w: 6 + Math.random() * 7, h: 3 + Math.random() * 5, c: cols[i % cols.length], life: 1 }); }
+  if (!cfRun) { cfRun = true; let last = performance.now(); const step = (now) => { const dt = Math.min(0.05, (now - last) / 1000); last = now; cfx.clearRect(0, 0, cfc.width, cfc.height); cfp = cfp.filter((p) => p.life > 0 && p.y < cfc.height + 30); for (const p of cfp) { p.vy += 760 * dt; p.vx *= 1 - 0.9 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt; p.life -= dt * 0.38; cfx.save(); cfx.globalAlpha = Math.min(1, p.life * 2); cfx.translate(p.x, p.y); cfx.rotate(p.r); cfx.fillStyle = p.c; cfx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cfx.restore(); } if (cfp.length) requestAnimationFrame(step); else { cfRun = false; cfx.clearRect(0, 0, cfc.width, cfc.height); } }; requestAnimationFrame(step); }
+}
 const show = (id, on = true) => $(id).classList.toggle('hidden', !on);
 
 /* ---------- Renderer ---------- */
@@ -853,7 +862,7 @@ function doOp(op) {
   balance.setState(t); sfx('click');
   { const n = pz.n; uiPuzzle(); eqFloat(op === 'c' ? '−' + n : op === 'x' ? '−' + (n > 1 ? n : '') + 'x' : '÷' + n, op); }
   if (isSolved(t)) {
-    pz.done = true; sfx('win');
+    pz.done = true; sfx('win'); confetti(130, 0.72, 0.4);
     const st = stars(pz.moves, pz.par);
     prog.stars[prog.level] = Math.max(prog.stars[prog.level] || 0, st);
     $('pz-win-text').innerHTML = `x = ${t.d} ✓<br>${'★'.repeat(st)}${'☆'.repeat(3 - st)} <small>(${pz.moves} hamle · en iyi ${pz.par})</small>`;
@@ -942,7 +951,7 @@ function showQ() {
       if (qz.locked) return; qz.locked = true;
       box.querySelectorAll('.opt').forEach((x) => x.classList.add('dim'));
       b.classList.remove('dim');
-      if (o.ok) { qz.score++; qz.streak++; b.classList.add('right'); b.querySelector('.ico').textContent = '✓'; sfx('ok'); } else {
+      if (o.ok) { qz.score++; qz.streak++; b.classList.add('right'); b.querySelector('.ico').textContent = '✓'; sfx('ok'); { const r = b.getBoundingClientRect(); confetti(qz.streak >= 3 ? 70 : 34, (r.left + r.width / 2) / innerWidth, (r.top + r.height / 2) / innerHeight); } } else {
         qz.streak = 0; sfx('bad'); b.classList.add('wrong'); b.querySelector('.ico').textContent = '✗';
         box.querySelectorAll('.opt').forEach((x) => { if (x.dataset.ok) { x.classList.remove('dim'); x.classList.add('right'); x.querySelector('.ico').textContent = '✓'; } });
       }
@@ -962,7 +971,7 @@ $('qz-next').onclick = () => {
   const hh = HIST[era] || (HIST[era] = { tries: 0, last: null, qs: {} }); hh.tries++; hh.last = { score: qz.score, total, passed: qz.score >= PASS_SCORE, marks: qz.marks.slice() }; histSave();
   const wrongN = total - qz.score;
   if (qz.score >= PASS_SCORE) {
-    parts[era] = true; PROGS[era].quizPassed = true; sfx('win');
+    parts[era] = true; PROGS[era].quizPassed = true; sfx('win'); confetti(220, 0.5, 0.4, true); setTimeout(() => confetti(140, 0.25, 0.5), 350); setTimeout(() => confetti(140, 0.75, 0.5), 600);
     try { localStorage.setItem('kf_parts', JSON.stringify(parts)); } catch (e) { /* yok say */ }
     refreshParts();
     const pn = ERAS.find((e) => e.id === era).part.toLocaleUpperCase('tr-TR');
@@ -1701,7 +1710,7 @@ function checkShadow() {
     sh.busy = false;
     const l = sh.l; const ans = (l.h * l.S) / l.s;
     if (Math.abs(H - ans) < 0.01) {
-      sh.done = true; sfx('win');
+      sh.done = true; sfx('win'); confetti(130, 0.72, 0.4); confetti(130, 0.72, 0.4);
       const st = sh.tries === 1 ? 3 : sh.tries === 2 ? 2 : 1;
       progM.stars[progM.level] = Math.max(progM.stars[progM.level] || 0, st);
       $('sh-msg').textContent = '';
@@ -1888,7 +1897,7 @@ function checkAngle() {
   sh.tries++; $('sh-tries').textContent = `Deneme: ${sh.tries}`;
   const l = sh.l; const ans = Math.round((360 * l.L) / l.theta * 1000) / 1000;
   if (Math.abs(C - ans) < 0.5) {
-    sh.done = true; sfx('win');
+    sh.done = true; sfx('win'); confetti(130, 0.72, 0.4);
     const st = sh.tries === 1 ? 3 : sh.tries === 2 ? 2 : 1;
     progI.stars[progI.level] = Math.max(progI.stars[progI.level] || 0, st);
     $('sh-msg').textContent = '';
@@ -1922,7 +1931,7 @@ function finaleCine() {
   mode = 'fin'; fin = { t: 0, step: 0 }; show('cine'); $('lb').classList.add('on'); show('hud', false);
   $('cine-skip').style.display = 'none'; $('cine-hint').style.display = 'none';
   $('cine-title').textContent = ''; $('cine-label').textContent = ''; $('cine-cap').textContent = '';
-  cineFxStart(); sfx('win'); const fl = $('cine-flash'); fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on');
+  cineFxStart(); sfx('win'); confetti(260, 0.5, 0.5, true); setTimeout(() => confetti(200, 0.3, 0.4), 1500); setTimeout(() => confetti(200, 0.7, 0.4), 2800); const fl = $('cine-flash'); fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on');
 }
 function finaleUpdate(t, dt) {
   fin.t += dt; const T = fin.t;
@@ -2220,6 +2229,7 @@ function cineUpdate(t, dt) {
   const typed = !cine.typing || cine.typing.done;
   if (!cine.busy && cine.t > sh.dur && typed && cine.i < CINE_SHOTS.length) cineNext();
 }
+(() => { const f = $('t-float'); if (!f) return; const g = ['x+3', 'π', '∠', '√', 'Σ', '3/5', 'θ', 'a²+b²', '=', '∞', 'sin', '2x', '∫', '1:2']; for (let i = 0; i < 26; i++) { const d = document.createElement('span'); d.textContent = g[i % g.length]; d.style.cssText = `left:${Math.random() * 100}%;font-size:${16 + Math.random() * 30}px;animation-duration:${14 + Math.random() * 18}s;animation-delay:${-Math.random() * 30}s;opacity:${0.12 + Math.random() * 0.25}`; f.appendChild(d); } })();
 $('btn-start').onclick = () => { sfx('click'); startCine(); };
 $('cine').onclick = () => cineNext();
 $('cine-skip').onclick = (e) => { e.stopPropagation(); if (cine) endCine(); };
@@ -2314,12 +2324,14 @@ function loop() {
     }
   }
 
-  player.visible = mode !== 'puzzle' && mode !== 'cine' && mode !== 'fin';
+  player.visible = mode !== 'puzzle' && mode !== 'cine' && mode !== 'fin' && mode !== 'title' && mode !== 'story';
   // kamera
   if (mode === 'cine') {
     cineUpdate(t, dt);
   } else if (mode === 'fin' && fin) {
     finaleUpdate(t, dt);
+  } else if (mode === 'title' || mode === 'story') {
+    const a = t * 0.12 + 0.6; camTarget.set(Math.sin(a) * 19, 6.5 + Math.sin(t * 0.2) * 0.8, Math.cos(a) * 19); lookTarget.set(0, 2.6, 0);
   } else if (mode === 'dialog' && dlg && dlg.focus) {
     const f = dlg.focus, dx = f.x - player.position.x, dz = f.z - player.position.z, d = Math.hypot(dx, dz) || 1, nx = dx / d, nz = dz / d, side = 0.95 + Math.sin(t * 0.25) * 0.3;
     camTarget.set(player.position.x - nx * 2.4 - nz * side, 1.95 + Math.sin(t * 0.3) * 0.08, player.position.z - nz * 2.4 + nx * side);

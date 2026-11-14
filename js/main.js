@@ -132,6 +132,9 @@ const progM = { met: false, solvedAll: false, quizPassed: !!parts.misir, level: 
 const progI = { met: false, solvedAll: false, quizPassed: !!parts.iskenderiye, level: 0, stars: [] };
 const QUIZZES = { bagdat: QUIZ_BAGDAT, misir: QUIZ_MISIR, iskenderiye: QUIZ_ISKENDERIYE };
 const PROGS = { bagdat: prog, misir: progM, iskenderiye: progI };
+// yıldızlar tarayıcıda saklanır (ana ekrana dönünce / sayfa yenilenince kaybolmasın)
+try { const st = JSON.parse(localStorage.getItem('kf_stars') || '{}'); Object.keys(PROGS).forEach((k) => { if (Array.isArray(st[k])) PROGS[k].stars = st[k].map((x) => x || 0); }); } catch (e) { /* yok say */ }
+function saveStars() { try { localStorage.setItem('kf_stars', JSON.stringify({ bagdat: prog.stars, misir: progM.stars, iskenderiye: progI.stars })); } catch (e) { /* yok say */ } }
 const TALK = { bagdat: () => talkHarezmi(), misir: () => talkAhmes(), iskenderiye: () => talkErato() };
 let shownParts = 0;
 
@@ -864,7 +867,7 @@ function doOp(op) {
   if (isSolved(t)) {
     pz.done = true; sfx('win'); confetti(130, 0.72, 0.4);
     const st = stars(pz.moves, pz.par);
-    prog.stars[prog.level] = Math.max(prog.stars[prog.level] || 0, st);
+    prog.stars[prog.level] = Math.max(prog.stars[prog.level] || 0, st); saveStars();
     $('pz-win-text').innerHTML = `x = ${t.d} ✓<br>${'★'.repeat(st)}${'☆'.repeat(3 - st)} <small>(${pz.moves} hamle · en iyi ${pz.par})</small>`;
     $('pz-next').textContent = prog.level + 1 < BALANCE_LEVELS.length ? 'Sonraki bölüm ▸' : 'Bitir ▸';
     show('pz-win');
@@ -1752,7 +1755,7 @@ function checkShadow() {
     if (Math.abs(H - ans) < 0.01) {
       sh.done = true; sfx('win'); confetti(130, 0.72, 0.4); confetti(130, 0.72, 0.4);
       const st = sh.tries === 1 ? 3 : sh.tries === 2 ? 2 : 1;
-      progM.stars[progM.level] = Math.max(progM.stars[progM.level] || 0, st);
+      progM.stars[progM.level] = Math.max(progM.stars[progM.level] || 0, st); saveStars();
       $('sh-msg').textContent = '';
       $('sh-win-text').innerHTML = `Gölge tam bayrağa değdi! ✓<br>H = ${l.h} · ${l.S} / ${l.s} = ${ans}<br>${'★'.repeat(st)}${'☆'.repeat(3 - st)}`;
       $('sh-next').textContent = progM.level + 1 < SHADOW_LEVELS.length ? 'Sonraki bölüm ▸' : 'Bitir ▸';
@@ -1939,7 +1942,7 @@ function checkAngle() {
   if (Math.abs(C - ans) < 0.5) {
     sh.done = true; sfx('win'); confetti(130, 0.72, 0.4);
     const st = sh.tries === 1 ? 3 : sh.tries === 2 ? 2 : 1;
-    progI.stars[progI.level] = Math.max(progI.stars[progI.level] || 0, st);
+    progI.stars[progI.level] = Math.max(progI.stars[progI.level] || 0, st); saveStars();
     $('sh-msg').textContent = '';
     $('sh-win-text').innerHTML = `Doğru! ✓<br>C = 360 · ${l.L} / ${l.theta} = ${ans} ${l.unit}<br>${'★'.repeat(st)}${'☆'.repeat(3 - st)}`;
     $('sh-next').textContent = progI.level + 1 < ANGLE_LEVELS.length ? 'Sonraki bölüm ▸' : 'Bitir ▸';
@@ -1963,7 +1966,7 @@ function startFinale() {
 function finaleResult() {
   const total = [...prog.stars, ...progM.stars, ...progI.stars].reduce((a, b) => a + (b || 0), 0);
   result('KAYIP FORMÜL TAMAMLANDI!', `Cebir, Oran ve Geometri parçaları zaman makinesinde.\nMatematik geri döndü!\nBulmaca yıldızların: ${total} / 54`, 'Yeniden oyna', () => {
-    try { localStorage.removeItem('kf_parts'); localStorage.removeItem('kf_hist'); } catch (e) { /* yok say */ }
+    try { localStorage.removeItem('kf_parts'); localStorage.removeItem('kf_hist'); localStorage.removeItem('kf_stars'); } catch (e) { /* yok say */ }
     location.reload();
   }, 'all');
 }

@@ -80,30 +80,81 @@ export function makePlayer() {
 }
 
 // Katip Ahmes — Mısırlı kâtip (Rhind Papirüsü'nü yazan kâtibe selam)
+function stripeTex(c1, c2, n = 12) {
+  const cv = document.createElement('canvas'); cv.width = 64; cv.height = 128; const x = cv.getContext('2d'), h = 128 / n;
+  for (let i = 0; i < n; i++) { x.fillStyle = i % 2 ? c1 : c2; x.fillRect(0, i * h, 64, h); }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+function papyrusTex() {
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 140; const x = cv.getContext('2d');
+  x.fillStyle = '#ecdcaa'; x.fillRect(0, 0, 256, 140);
+  for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(150,110,50,${Math.random() * 0.08})`; x.fillRect(0, Math.random() * 140, 256, 2); }
+  x.strokeStyle = '#7a3b1e'; x.fillStyle = '#7a3b1e'; x.lineWidth = 3;
+  x.strokeRect(8, 8, 240, 124);
+  x.font = 'bold 40px Georgia, serif'; x.textAlign = 'center'; x.fillText('1 : 2', 128, 64);
+  x.font = '22px Georgia, serif'; x.fillText('x = (b · c) / a', 128, 104);
+  for (const [px, py] of [[34, 34], [222, 34], [34, 108], [222, 108]]) { x.beginPath(); x.arc(px, py, 8, 0, 7); x.stroke(); x.beginPath(); x.arc(px, py, 2.5, 0, 7); x.fill(); }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+// Ahmes — Mısırlı katip (özgün tasarım): nemes başlık, geniş boyun süsü, keten etek, elinde açık papirüs
 export function makeScribe() {
   const g = new THREE.Group();
-  const kilt = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.5, 1.0, 18), M(0xf3ead2));
-  kilt.position.y = 0.5; g.add(kilt);
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 0.7, 16), M(0xb87a4b));
-  torso.position.y = 1.35; g.add(torso);
-  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.07, 8, 20), M(0xe0a82e, { metalness: 0.6 }));
-  collar.rotation.x = Math.PI / 2; collar.position.y = 1.68; g.add(collar);
-  const head = new THREE.Group(); head.position.y = 1.95; g.add(head);
-  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.25, 18, 14), M(0xb87a4b)));
-  const wig = new THREE.Mesh(new THREE.SphereGeometry(0.28, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), M(0x15110d));
-  wig.position.y = 0.05; head.add(wig);
-  for (const s of [-1, 1]) {
-    const side = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.45, 0.2), M(0x15110d));
-    side.position.set(0.25 * s, -0.12, 0); head.add(side);
-    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.03, 0.02), M(0x050505));
-    eye.position.set(0.09 * s, 0.04, 0.23); head.add(eye);
+  const skin = 0xa8683c, gold = 0xe0a82e, blue = 0x1f5fa8, turq = 0x2bb3c0;
+  const goldM = () => M(gold, { metalness: 0.7, roughness: 0.35 });
+  // sandaletler ve etek
+  for (const sx of [-1, 1]) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.34), M(0x6b4423)); f.position.set(0.16 * sx, 0.03, 0.06); g.add(f); }
+  const kilt = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.5, 0.98, 24), M(0xf6eed8, { roughness: 0.9 }));
+  kilt.position.y = 0.55; g.add(kilt);
+  const front = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.78, 0.05), M(0xfffaf0, { roughness: 0.85 })); front.position.set(0, 0.6, 0.45); front.rotation.x = 0.1; g.add(front);
+  const hem = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.05, 0.06), goldM()); hem.position.set(0, 0.22, 0.49); g.add(hem);
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.345, 0.345, 0.1, 24), goldM()); belt.position.y = 1.03; g.add(belt);
+  const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.05), M(blue)); buckle.position.set(0, 1.03, 0.35); g.add(buckle);
+  // gövde
+  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.3, 0.6, 20), M(skin)); torso.position.y = 1.35; g.add(torso);
+  for (const sx of [-1, 1]) { const ch = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), M(skin)); ch.scale.set(1, 0.8, 0.7); ch.position.set(0.14 * sx, 1.45, 0.24); g.add(ch); }
+  // geniş boyun süsü (usekh)
+  [[0.3, 0.035, gold, 1.68], [0.345, 0.035, turq, 1.645], [0.39, 0.035, 0xc0392b, 1.61], [0.435, 0.035, gold, 1.575]].forEach(([r, t, c, y]) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(r, t, 8, 28), c === gold ? goldM() : M(c, { roughness: 0.4 }));
+    ring.rotation.x = Math.PI / 2 - 0.15; ring.scale.set(1, 0.85, 1); ring.position.set(0, y, 0.04); g.add(ring);
+  });
+  // baş
+  const head = new THREE.Group(); head.position.y = 1.9; g.add(head);
+  const face = new THREE.Mesh(new THREE.SphereGeometry(0.25, 22, 18), M(skin)); face.scale.set(0.92, 1.08, 0.95); head.add(face);
+  const stripes = stripeTex('#e0a82e', '#1f5fa8', 14);
+  const nemesM = new THREE.MeshStandardMaterial({ map: stripes, roughness: 0.6, metalness: 0.15 });
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.295, 26, 16, 0, Math.PI * 2, 0, Math.PI * 0.56), nemesM); cap.position.y = 0.05; cap.scale.set(1, 1, 1.05); head.add(cap);
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.265, 0.025, 8, 28), goldM()); band.rotation.x = Math.PI / 2; band.position.set(0, 0.155, 0.03); band.scale.set(1, 1.05, 1); head.add(band);
+  const uraeus = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.12, 8), goldM()); uraeus.position.set(0, 0.22, 0.28); uraeus.rotation.x = -0.4; head.add(uraeus);
+  for (const sx of [-1, 1]) {
+    const lap = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.52, 0.16), nemesM); lap.position.set(0.255 * sx, -0.24, 0.03); lap.rotation.z = 0.04 * sx; head.add(lap);
+    // gözler: kohl çizgili
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.036, 10, 8), M(0xffffff, { roughness: 0.3 })); eye.scale.set(1.2, 0.8, 0.5); eye.position.set(0.095 * sx, 0.03, 0.238); head.add(eye);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 8), M(0x0a0604)); pupil.position.set(0.095 * sx, 0.03, 0.252); head.add(pupil);
+    const kohl = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.022, 0.02), M(0x050505)); kohl.position.set(0.12 * sx, 0.03, 0.242); kohl.rotation.z = 0.12 * sx; head.add(kohl);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.022, 0.02), M(0x050505)); brow.position.set(0.1 * sx, 0.095, 0.238); brow.rotation.z = -0.1 * sx; head.add(brow);
+    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), M(skin)); ear.scale.set(0.5, 1, 0.8); ear.position.set(0.235 * sx, 0, 0); head.add(ear);
   }
-  const arm = (s) => { const a = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 0.65, 10), M(0xb87a4b)); a.position.set(0.38 * s, 1.25, 0.18); a.rotation.set(-0.8, 0, -0.2 * s); g.add(a); };
-  arm(-1); arm(1);
-  const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.5, 12), M(0xe9dcb0));
-  scroll.rotation.z = Math.PI / 2; scroll.position.set(0, 1.12, 0.42); g.add(scroll);
-  const sym = labelSprite('1 : 2', '#ffcf6a', 0.5); sym.position.set(0, 2.7, 0); g.add(sym);
-  const name = labelSprite('Katip Ahmes', '#ffe08a', 0.55); name.position.set(0, 3.05, 0); g.add(name);
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.1), nemesM); tail.position.set(0, -0.28, -0.27); head.add(tail);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.1, 8), M(skin)); nose.position.set(0, -0.02, 0.265); nose.rotation.x = Math.PI / 2 + 0.3; head.add(nose);
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.02, 0.02), M(0x7a3326)); mouth.position.set(0, -0.11, 0.238); head.add(mouth);
+  // kollar: omuz → dirsek → önkol, papirüsü tutuyor
+  for (const sx of [-1, 1]) {
+    const sh = new THREE.Group(); sh.position.set(0.4 * sx, 1.58, 0); sh.rotation.set(-0.5, 0, -0.08 * sx); g.add(sh);
+    const up = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.4, 12), M(skin)); up.position.y = -0.19; sh.add(up);
+    const band2 = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.05, 12), goldM()); band2.position.y = -0.08; sh.add(band2);
+    const el = new THREE.Group(); el.position.y = -0.39; el.rotation.x = -1.2; sh.add(el);
+    const fo = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.34, 12), M(skin)); fo.position.y = -0.17; el.add(fo);
+    const wr = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.04, 12), goldM()); wr.position.y = -0.3; el.add(wr);
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), M(skin)); hand.position.y = -0.37; el.add(hand);
+  }
+  // açık papirüs
+  const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.36, 0.015), new THREE.MeshStandardMaterial({ map: papyrusTex(), roughness: 0.95 }));
+  sheet.position.set(0, 1.27, 0.54); sheet.rotation.x = -0.3; g.add(sheet);
+  for (const sx of [-1, 1]) { const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.42, 10), M(0xd9c58b)); rod.position.set(0.34 * sx, 1.27, 0.54); rod.rotation.x = -0.3; g.add(rod); }
+  // kamış kalem
+  const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 6), M(0x6b4423)); pen.position.set(0.3, 1.38, 0.5); pen.rotation.set(0.5, 0, -0.6); g.add(pen);
+  const sym = labelSprite('1 : 2', '#ffcf6a', 0.5); sym.position.set(0, 2.85, 0); g.add(sym);
+  const name = labelSprite('Katip Ahmes', '#ffe08a', 0.55); name.position.set(0, 3.2, 0); g.add(name);
   g.userData = { head, sym };
   g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   return g;

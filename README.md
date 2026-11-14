@@ -1,6 +1,6 @@
 # Kayıp Formül
 
-Zaman yolculuğu temalı, 3D bir matematik eğitim oyunu (lise 9–12). Matematik silinmiş; 2157'den üç çağa ışınlanıp formülün parçalarını geri getiriyorsun.
+Zaman yolculuğu temalı, 3D bir matematik eğitim oyunu (lise 9–10). Matematik silinmiş; 2157'den üç çağa ışınlanıp formülün parçalarını geri getiriyorsun.
 
 ## Çağlar
 | Çağ | Konu | Rehber |

@@ -160,32 +160,98 @@ export function makeScribe() {
   return g;
 }
 
-// Eratosthenes — İskenderiye Kütüphanesi'nin başkâtibi (özgün tasarım)
+// Eratosthenes — İskenderiye Kütüphanesi'nin başkâtibi (özgün tasarım): beyaz khiton, mor himation, Yunan kenarlı etek,
+// defne tacı, gümüş sakal; bir elinde armillary küre, diğerinde papirüs tomarı.
+function meanderTex(bg = '#f4efe2', fg = '#c79a2e') {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 32; const x = c.getContext('2d');
+  x.fillStyle = bg; x.fillRect(0, 0, 256, 32); x.strokeStyle = fg; x.lineWidth = 4; x.lineCap = 'square';
+  for (let k = 0; k < 8; k++) { const ox = k * 32; x.beginPath(); x.moveTo(ox + 3, 29); x.lineTo(ox + 3, 4); x.lineTo(ox + 29, 4); x.lineTo(ox + 29, 22); x.lineTo(ox + 11, 22); x.lineTo(ox + 11, 13); x.lineTo(ox + 20, 13); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function pleatTex(base = '#f3f0e8', line = '#d8d2c2') {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 8; const x = c.getContext('2d');
+  x.fillStyle = base; x.fillRect(0, 0, 128, 8);
+  for (let k = 0; k < 16; k++) { x.fillStyle = line; x.fillRect(k * 8 + 2, 0, 3, 8); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+}
 export function makeScholar() {
   const g = new THREE.Group();
-  const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.58, 1.6, 20), M(0xf2f0ea));
+  const skin = 0xd9a577, gold = 0xe0a82e, purple = 0x5a2e9a;
+  const goldM = () => M(gold, { metalness: 0.75, roughness: 0.3 });
+  // sandaletler
+  for (const sx of [-1, 1]) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.06, 0.32), M(0x7a4a28)); f.position.set(0.15 * sx, 0.03, 0.08); g.add(f); }
+  // plise khiton
+  const pt = pleatTex(); pt.repeat.set(3, 1);
+  const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.52, 1.5, 32), new THREE.MeshStandardMaterial({ map: pt, roughness: 0.85 }));
   robe.position.y = 0.8; g.add(robe);
-  const drape = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.4, 0.5, 18, 1, true, 0, Math.PI * 1.3), M(0x6c4fb2, { side: THREE.DoubleSide }));
-  drape.position.y = 1.35; drape.rotation.y = 0.6; g.add(drape);
-  const head = new THREE.Group(); head.position.y = 1.78; g.add(head);
-  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.26, 18, 14), M(0xdcae82)));
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.28, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), M(0x9a9a9a));
-  hair.position.y = 0.05; head.add(hair);
-  const beard = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.4, 12), M(0xb9b9b9));
-  beard.rotation.x = Math.PI; beard.position.set(0, -0.28, 0.1); head.add(beard);
-  const laurel = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.035, 8, 22), M(0x3a8a3a));
-  laurel.rotation.x = Math.PI / 2; laurel.position.y = 0.13; head.add(laurel);
-  for (const s of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 8), M(0x111111));
-    eye.position.set(0.09 * s, 0.04, 0.23); head.add(eye);
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.65, 10), M(0xf2f0ea));
-    arm.position.set(0.4 * s, 1.2, 0.15); arm.rotation.set(-0.7, 0, -0.25 * s); g.add(arm);
+  const mt = meanderTex(); mt.repeat.set(3, 1);
+  const hem = new THREE.Mesh(new THREE.CylinderGeometry(0.515, 0.525, 0.12, 32, 1, true), new THREE.MeshStandardMaterial({ map: mt, roughness: 0.6, side: THREE.DoubleSide }));
+  hem.position.y = 0.14; g.add(hem);
+  const hemTop = new THREE.Mesh(new THREE.TorusGeometry(0.515, 0.012, 6, 32), goldM()); hemTop.rotation.x = Math.PI / 2; hemTop.position.y = 0.2; g.add(hemTop);
+  // kemer
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.07, 28), goldM()); belt.position.y = 1.16; g.add(belt);
+  // üst gövde
+  const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.33, 0.5, 28), new THREE.MeshStandardMaterial({ map: pt, roughness: 0.85 }));
+  chest.position.y = 1.43; g.add(chest);
+  const shoulders = new THREE.Mesh(new THREE.SphereGeometry(0.37, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.5), M(0xf3f0e8, { roughness: 0.85 }));
+  shoulders.scale.set(1.15, 0.5, 0.8); shoulders.position.y = 1.66; g.add(shoulders);
+  // himation: sol omuzdan sağ kalçaya çapraz mor örtü + arkadan sarkan kısım
+  const sash = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.0, 0.07), M(purple, { roughness: 0.75 }));
+  sash.position.set(0.02, 1.38, 0.33); sash.rotation.z = 0.6; sash.rotation.y = 0.05; g.add(sash);
+  const sashEdge = new THREE.Mesh(new THREE.BoxGeometry(0.035, 1.0, 0.08), goldM()); sashEdge.position.set(0.02, 1.38, 0.335); sashEdge.rotation.z = 0.6; sashEdge.position.x += 0.1; sashEdge.position.y -= 0.0; g.add(sashEdge);
+  const wrap = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.45, 0.42, 26, 1, false, Math.PI * 0.4, Math.PI * 1.3), M(purple, { roughness: 0.75, side: THREE.DoubleSide }));
+  wrap.position.y = 1.0; g.add(wrap);
+  const cape = new THREE.Mesh(new THREE.BoxGeometry(0.62, 1.05, 0.06), M(purple, { roughness: 0.75 })); cape.position.set(0, 1.12, -0.36); cape.rotation.x = 0.08; g.add(cape);
+  const capeEdge = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.05, 0.07), goldM()); capeEdge.position.set(0, 0.62, -0.36); g.add(capeEdge);
+  const brooch = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), goldM()); brooch.position.set(-0.22, 1.66, 0.28); g.add(brooch);
+  // boyun
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.16, 12), M(skin)); neck.position.y = 1.78; g.add(neck);
+  // baş
+  const head = new THREE.Group(); head.position.y = 1.98; g.add(head);
+  const face = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 18), M(skin, { roughness: 0.6 })); face.scale.set(0.9, 1.08, 0.95); head.add(face);
+  const hairM = M(0xc9c9cc, { roughness: 0.9 });
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.265, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.52), hairM); hair.position.set(0, 0.04, -0.02); hair.scale.set(0.98, 1, 1.02); head.add(hair);
+  const back = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 12), hairM); back.scale.set(0.95, 0.8, 0.7); back.position.set(0, -0.06, -0.12); head.add(back);
+  // defne tacı: halka + yapraklar
+  const wreath = new THREE.Mesh(new THREE.TorusGeometry(0.255, 0.018, 8, 32), M(0x2f6b2a)); wreath.rotation.x = Math.PI / 2; wreath.position.y = 0.125; head.add(wreath);
+  for (let k = 0; k < 18; k++) {
+    const a = (k / 18) * Math.PI * 2; if (Math.sin(a) > 0.92 && Math.cos(a) < 0) continue;
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), M(k % 2 ? 0x3f8f35 : 0x2f6b2a, { roughness: 0.5 }));
+    leaf.scale.set(0.5, 0.25, 1.5); leaf.position.set(Math.sin(a) * 0.26, 0.135, Math.cos(a) * 0.26); leaf.rotation.y = a; leaf.rotation.x = -0.2; head.add(leaf);
   }
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.02, 8, 24), M(0xe0a82e, { metalness: 0.8 }));
-  ring.position.set(0, 1.2, 0.5); g.add(ring);
-  const sym = labelSprite('θ = ?', '#c9b8ff', 0.5); sym.position.set(0, 2.55, 0); g.add(sym);
-  const name = labelSprite('Eratosthenes', '#ffe08a', 0.55); name.position.set(0, 2.9, 0); g.add(name);
-  g.userData = { head, sym, ring };
+  // sakal
+  const beard = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 14), hairM); beard.scale.set(0.95, 1.35, 0.7); beard.position.set(0, -0.2, 0.1); head.add(beard);
+  const stache = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), hairM); stache.scale.set(1.5, 0.45, 0.6); stache.position.set(0, -0.07, 0.225); head.add(stache);
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.033, 10, 8), M(0xffffff, { roughness: 0.3 })); eye.scale.set(1.2, 0.8, 0.5); eye.position.set(0.085 * sx, 0.04, 0.215); head.add(eye);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 8), M(0x1a1008)); pupil.position.set(0.085 * sx, 0.04, 0.228); head.add(pupil);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.022, 0.03), hairM); brow.position.set(0.09 * sx, 0.09, 0.212); brow.rotation.z = -0.12 * sx; head.add(brow);
+    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), M(skin)); ear.scale.set(0.5, 1, 0.8); ear.position.set(0.22 * sx, 0, 0); head.add(ear);
+  }
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.1, 8), M(skin)); nose.position.set(0, -0.01, 0.245); nose.rotation.x = Math.PI / 2 + 0.3; head.add(nose);
+  // kollar (omuz → dirsek): sağ kol armillary küreyi, sol kol tomarı tutuyor
+  const sleeveM = new THREE.MeshStandardMaterial({ map: pt, roughness: 0.85 });
+  const arms = [];
+  for (const sx of [-1, 1]) {
+    const sh = new THREE.Group(); sh.position.set(0.42 * sx, 1.68, 0); sh.rotation.set(-0.55, 0, -0.1 * sx); g.add(sh);
+    const up = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.4, 12), sleeveM); up.position.y = -0.19; sh.add(up);
+    const el = new THREE.Group(); el.position.y = -0.38; el.rotation.x = -1.1; sh.add(el);
+    const fo = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.085, 0.34, 12), M(skin)); fo.position.y = -0.17; el.add(fo);
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), M(skin)); hand.position.y = -0.36; el.add(hand);
+    arms.push(sh);
+  }
+  // armillary küre (sağ elde, öne)
+  const arm = new THREE.Group(); arm.position.set(0.36, 1.25, 0.58); g.add(arm);
+  const ringM = goldM();
+  for (const [rx, ry] of [[0, 0], [Math.PI / 2, 0], [0.4, Math.PI / 2]]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.014, 8, 32), ringM); r.rotation.set(rx, ry, 0); arm.add(r); }
+  const earth = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 12), M(0x2f78c4, { roughness: 0.4 })); arm.add(earth);
+  // tomar (sol elde)
+  const scroll = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.42, 14), new THREE.MeshStandardMaterial({ map: papyrusTex(), roughness: 0.95 }));
+  scroll.position.set(-0.34, 1.24, 0.52); scroll.rotation.set(0.2, 0, Math.PI / 2 - 0.5); g.add(scroll);
+  for (const e of [-1, 1]) { const cap = new THREE.Mesh(new THREE.SphereGeometry(0.058, 10, 8), goldM()); cap.position.set(-0.34 + Math.cos(0.5) * 0.22 * e * -1, 1.24 + Math.sin(0.5) * 0.22 * e * -1, 0.52 + 0.02 * e); g.add(cap); }
+  const sym = labelSprite('θ = ?', '#c9b8ff', 0.5); sym.position.set(0, 2.75, 0); g.add(sym);
+  const name = labelSprite('Eratosthenes', '#ffe08a', 0.55); name.position.set(0, 3.1, 0); g.add(name);
+  g.userData = { head, sym, ring: arm };
   g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   return g;
 }

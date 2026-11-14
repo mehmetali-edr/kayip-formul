@@ -7,7 +7,7 @@ import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import * as TX from './textures.js?v=20';
-import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=52';
+import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=54';
 import { ERAS, STORY, BALANCE_LEVELS, QUIZ_BAGDAT, QUIZ_MISIR, SHADOW_LEVELS, AHMES, ANGLE_LEVELS, QUIZ_ISKENDERIYE, ERATO, FINALE, PASS_SCORE, HAREZMI } from './data.js?v=20';
 import { apply, isSolved, solve, par, fmt, stepText, stars } from './balance.js?v=20';
 
@@ -1631,6 +1631,7 @@ function buildMisir() {
   for (const sx of [-1, 1]) mesh(new THREE.BoxGeometry(0.1, 0.95, 0.1), wood, ax + 0.4 + sx * 1.1, 0.47, az - 0.9, g);
   for (let i = 0; i < 3; i++) { const sc = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.6, 10), mat(0xe9dcb0), ax - 0.2 + i * 0.3, 1.08, az - 0.9, g); sc.rotation.z = Math.PI / 2; }
   const scribe = makeScribe(); scribe.position.set(ax - 1.2, 0, az + 0.6); scribe.rotation.y = -0.5; scribe.scale.setScalar(1.25); g.add(scribe);
+  attachModel(scribe, 'assets/models/ahmes_3d.glb', 2.1);
   // Ahmes'in 3B modeli kaldırıldı: dünyada kodla çizilen katip, konuşmada portre PNG'si kullanılır
   w.colliders.push({ x: ax - 1.2, z: az + 0.6, r: 0.8 }, { x: ax + 0.4, z: az - 0.9, r: 1.4 });
   w.interact.push({ pos: new THREE.Vector3(ax - 1.2, 0, az + 0.6), r: 3.2, label: () => 'E: Katip Ahmes ile konuş', action: () => talkAhmes() });
@@ -1840,7 +1841,7 @@ function buildIskenderiye() {
   const rings = [0, 1, 2].map((i) => { const r = mesh(new THREE.TorusGeometry(0.6, 0.03, 8, 40), mat(0xe0a82e, { metalness: 0.9, roughness: 0.25 }), 0, 0, 0, arm); r.rotation.set(i * 1.05, i * 0.7, 0); return r; });
   mesh(new THREE.SphereGeometry(0.2, 16, 12), mat(0x2f8ad0), 0, 0, 0, arm);
   const scholar = makeScholar(); scholar.position.set(ex, 0, ez); scholar.rotation.y = -0.5; scholar.scale.setScalar(1.25); g.add(scholar);
-  attachModel(scholar, 'assets/models/eratosthenes.glb', 2.1);
+  // eratosthenes.glb yerine prosedürel model kullanılıyor (makeScholar)
   w.colliders.push({ x: ex, z: ez, r: 0.8 }, { x: ex + 1.8, z: ez - 1.0, r: 1.0 });
   w.interact.push({ pos: new THREE.Vector3(ex, 0, ez), r: 3.2, label: () => 'E: Eratosthenes ile konuş', action: () => talkErato() });
 
@@ -1908,7 +1909,7 @@ function buildIskenderiye() {
     bdisc.rotation.z = t * 0.7;
     rings.forEach((r, i) => { r.rotation.x += 0.004 * (i + 1); r.rotation.y += 0.006; });
     floaters.forEach((s) => { s.position.y += Math.sin(t + s.userData.b) * 0.003; s.material.opacity = 0.5 + Math.sin(t * 1.5 + s.userData.b) * 0.3; });
-    scholar.position.y = Math.sin(t * 1.4) * 0.02;
+    scholar.position.y = Math.sin(t * 1.4) * 0.02; if (scholar.userData.ring) scholar.userData.ring.rotation.y = t * 0.6;
     const d = player.position.clone().sub(scholar.position);
     if (d.length() < 9) scholar.rotation.y = THREE.MathUtils.lerp(scholar.rotation.y, Math.atan2(d.x, d.z), 0.06);
     sea.position.y = -0.45 + Math.sin(t * 0.8) * 0.03;

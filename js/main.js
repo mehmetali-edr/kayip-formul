@@ -933,12 +933,20 @@ function startQuiz(era = 'bagdat') {
   $('qz-era').textContent = m.icon + ' ' + m.name;
   mode = 'quiz'; show('quiz'); show('prompt', false); showQ();
 }
+function startPractice(scope) {
+  const d = karneData(scope);
+  const items = d.wrongs.slice().sort((a, b) => (a.lastOk ? 1 : 0) - (b.lastOk ? 1 : 0) || b.wrong - a.wrong).slice(0, 8).map((r) => { const q = QUIZZES[r.era].find((x) => x.q === r.q); return q ? { ...q, _era: r.era } : null; }).filter(Boolean).sort(() => Math.random() - 0.5);
+  if (!items.length) return;
+  qz = { era: items[0]._era, order: items, i: 0, score: 0, locked: false, streak: 0, marks: [], practice: true };
+  show('karne', false); show('result', false); mode = 'quiz'; show('quiz'); show('prompt', false); showQ();
+}
 function qzDots() {
   $('qz-dots').innerHTML = qz.order.map((_, i) => `<i class="${i < qz.marks.length ? (qz.marks[i] ? 'ok' : 'bad') : i === qz.i ? 'cur' : ''}"></i>`).join('');
-  $('qz-score').innerHTML = `Soru <b>${qz.i + 1}</b>/${qz.order.length} · Doğru <b>${qz.score}</b> <span class="need">(geçmek için ${PASS_SCORE})</span>`;
+  $('qz-score').innerHTML = `Soru <b>${qz.i + 1}</b>/${qz.order.length} · Doğru <b>${qz.score}</b> <span class="need">${qz.practice ? '' : '(geçmek için ' + PASS_SCORE + ')'}</span>`;
 }
 function showQ() {
   const q = qz.order[qz.i]; qz.locked = false;
+  if (qz.practice) { const m = ERA_META[q._era]; $('quiz').style.setProperty('--ac', m.col); $('qz-era').textContent = '🔁 Tekrar Çalış · ' + m.name; }
   const card = $('qz-card'); card.classList.remove('in'); void card.offsetWidth; card.classList.add('in');
   $('qz-topic').textContent = q.topic; $('qz-q').textContent = q.q;
   $('qz-streak').textContent = qz.streak >= 2 ? `🔥 ${qz.streak} seri` : '';
@@ -955,7 +963,7 @@ function showQ() {
         qz.streak = 0; sfx('bad'); b.classList.add('wrong'); b.querySelector('.ico').textContent = '✗';
         box.querySelectorAll('.opt').forEach((x) => { if (x.dataset.ok) { x.classList.remove('dim'); x.classList.add('right'); x.querySelector('.ico').textContent = '✓'; } });
       }
-      qz.marks[qz.i] = o.ok; histRec(qz.era, q, o.t, o.ok); qzDots();
+      qz.marks[qz.i] = o.ok; histRec(q._era || qz.era, q, o.t, o.ok); qzDots();
       $('qz-note').innerHTML = `<b>${o.ok ? '✔ Doğru!' : '✖ Olmadı.'}</b> <span class="lbl">Çözüm:</span> ${esc(q.note)}`;
       $('qz-note').className = o.ok ? 'good' : 'bad';
       show('qz-note'); show('qz-next'); show('qz-hint', false);
@@ -967,6 +975,11 @@ function showQ() {
 $('qz-next').onclick = () => {
   if (qz.i + 1 < qz.order.length) { qz.i++; showQ(); return; }
   show('quiz', false);
+  if (qz.practice) {
+    const sc = qz.score, tot = qz.order.length; sfx(sc === tot ? 'win' : 'ok'); if (sc === tot) confetti(200, 0.5, 0.4, true);
+    result(sc === tot ? 'HEPSİNİ DÜZELTTİN!' : 'Tekrar çalışma bitti', `${sc}/${tot} doğru.${sc === tot ? '\nBu soruların hepsini artık biliyorsun.' : '\nYanlışlar karnede kalmaya devam ediyor; çözümlere bir kez daha bak.'}`, 'Karneye dön', () => openKarne('all'));
+    return;
+  }
   const total = qz.order.length; const era = qz.era;
   const hh = HIST[era] || (HIST[era] = { tries: 0, last: null, qs: {} }); hh.tries++; hh.last = { score: qz.score, total, passed: qz.score >= PASS_SCORE, marks: qz.marks.slice() }; histSave();
   const wrongN = total - qz.score;
@@ -1006,6 +1019,7 @@ function renderKarne(scope) {
     const m = ERA_META[id], h = HIST[id], l = h && h.last, pct = l ? Math.round((l.score / l.total) * 100) : 0;
     return `<div class="kr-era" style="--ac:${m.col}"><div class="kr-en">${m.icon} ${m.name}</div><div class="kr-bar"><i style="width:${pct}%"></i></div><div class="kr-es">${l ? `Son sınav: <b>${l.score}/${l.total}</b> ${l.passed ? '✔ geçti' : '✖ geçemedi'} · ${h.tries} deneme` : 'Henüz sınava girilmedi'}</div></div>`;
   }).join('') + '</div>';
+  if (d.wrongs.length) html += `<button id="kr-practice" data-scope="${scope}">🔁 Yanlışlarımı tekrar çöz <small>(${Math.min(8, d.wrongs.length)} soru)</small></button>`;
   html += '<h3 class="kr-h">🎯 Odaklanman gereken konular</h3>';
   if (!d.topics.length) html += `<div class="kr-empty">${seen ? 'Harika! Yanlış yaptığın konu yok. 🎉' : 'Henüz sınav çözülmedi.'}</div>`;
   else html += '<div class="kr-topics">' + d.topics.map((t) => `<div class="kr-topic" style="--ac:${ERA_META[t.era].col}"><div class="kt-top"><b>${esc(t.topic)}</b><span>${t.wrong} yanlış / ${t.seen} soru</span></div><div class="kr-bar"><i style="width:${Math.min(100, Math.round((t.wrong / t.seen) * 100))}%"></i></div><p>💡 ${esc(TOPIC_TIPS[t.topic] || 'Bu konunun çözümlerine tekrar göz at.')}</p></div>`).join('') + '</div>';
@@ -1013,6 +1027,7 @@ function renderKarne(scope) {
   if (!d.wrongs.length) html += '<div class="kr-empty">Çözülecek yanlış soru yok.</div>';
   else html += '<div class="kr-wrongs">' + d.wrongs.map((r) => `<div class="kr-w" style="--ac:${ERA_META[r.era].col}"><div class="kw-top"><span class="kw-tag">${esc(r.topic)}</span>${r.lastOk ? '<span class="kw-fix">Sonradan doğru yaptın ✔</span>' : '<span class="kw-open">Hâlâ çalışılmalı</span>'}</div><div class="kw-q">${esc(r.q)}</div><div class="kw-ans"><span class="no">✗ Senin cevabın: ${esc(r.lastChosen || '—')}</span><span class="yes">✓ Doğru cevap: ${esc(r.correct)}</span></div><div class="kw-sol"><b>Nasıl çözülür?</b> ${esc(r.note)}</div></div>`).join('') + '</div>';
   body.innerHTML = html; body.scrollTop = 0;
+  const pb = $('kr-practice'); if (pb) pb.onclick = () => startPractice(pb.dataset.scope);
 }
 function openKarne(scope = 'all') {
   karneBack = mode; mode = 'karne'; renderKarne(scope); show('karne'); $('kr-title').textContent = scope === 'all' ? 'Öğrenme Karnesi' : ERA_META[scope].name + ' · Karne';
@@ -2468,7 +2483,7 @@ function loadWorldHdri(name, extraUrl) {
 loadWorldHdri('bagdat', 'assets/hdri/magalies_field_sunset_2k.exr');
 loadWorldHdri('misir');
 loadWorldHdri('iskenderiye');
-if (location.search.includes('debug')) window.__KF = { setWorld, player, camera, scene, worlds, get mode() { return mode; } };
+if (location.search.includes('debug')) window.__KF = { setWorld, player, camera, scene, worlds, startQuiz, openKarne, get mode() { return mode; } };
 refreshParts();
 worlds.hub.group.visible = true;
 player.position.copy(worlds.hub.spawn);

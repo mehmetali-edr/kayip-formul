@@ -283,3 +283,7 @@ button.big { padding: 13px 30px; font-size: 18px; font-weight: 600; background: 
 @keyframes winPop { from { transform: scale(.4); opacity: 0; } }
 #pz-win:not(.hidden), #sh-win:not(.hidden) { animation: winGlow 1.6s ease-out; }
 @keyframes winGlow { 0% { box-shadow: 0 0 0 rgba(255,224,138,0); } 30% { box-shadow: 0 -10px 40px rgba(255,224,138,.5); } 100% { box-shadow: 0 0 0 rgba(255,224,138,0); } }
+
+#kr-practice { display: block; width: 100%; margin-top: 18px; padding: 16px; border-radius: 16px; font-size: 18px; font-weight: 800; color: #04201d; background: linear-gradient(160deg, #ffe08a, #ffb347); border: 2px solid #fff0b8; box-shadow: 0 5px 0 #8a5a12, 0 0 30px rgba(255,200,80,.35); animation: tBtn 2.4s ease-in-out infinite; }
+#kr-practice small { font-weight: 600; opacity: .75; }
+#kr-practice:hover { transform: translateY(-2px); } #kr-practice:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5a12; }

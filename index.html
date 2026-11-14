@@ -18,7 +18,7 @@
   <!-- HUD -->
   <div id="hud" class="hidden">
     <div id="era-label">Zaman Makinesi</div>
-    <button id="btn-karne" title="Karne (K)">📋 Karne</button><div id="parts"><span data-p="bagdat">Cebir</span><span data-p="misir">Oran</span><span data-p="iskenderiye">Geometri</span></div>
+    <button id="btn-hub" class="hidden" title="Zaman Makinesi'ne dön">⏪ Zaman Makinesi</button><button id="btn-karne" title="Karne (K)">📋 Karne</button><button id="btn-home" class="home-btn" title="Oyun Merkezine dön">🎮 Oyun Merkezi</button><button id="btn-menu" title="Menü (Esc)">☰ Menü</button><div id="parts"><span data-p="bagdat">Cebir</span><span data-p="misir">Oran</span><span data-p="iskenderiye">Geometri</span></div>
   </div>
   <div id="prompt" class="hidden"></div>
   <div id="toast" class="hidden"></div>
@@ -27,6 +27,7 @@
   <!-- Başlangıç -->
   <div id="title" class="overlay">
     <div id="t-float"></div>
+    <button id="t-home" class="home-btn">🎮 Oyun Merkezine Dön</button>
     <div id="t-box">
       <div id="t-eyebrow">ZAMAN YOLCULUĞU · MATEMATİK MACERASI</div>
       <div id="t-logo"><span>∑</span><span>∫</span><span>π</span><span>√</span></div>
@@ -117,6 +118,22 @@
     <div class="card"><h1 id="rs-title"></h1><p id="rs-text"></p><div class="rs-row"><button id="rs-review" class="hidden">📋 Çözümleri ve karneyi gör</button><button id="rs-btn" class="big">Tamam</button></div></div>
   </div>
 
+  <!-- Duraklat menüsü -->
+  <div id="pause" class="overlay hidden">
+    <div id="pause-card">
+      <div id="pa-sub">KAYIP FORMÜL</div>
+      <h1>MENÜ</h1>
+      <div id="pa-where"></div>
+      <button id="pa-resume" class="big">▶ Oyuna dön</button>
+      <button id="pa-hub">🏛 Zaman Makinesi'ne dön</button>
+      <button id="pa-karne">📋 Karne</button>
+      <button id="pa-sound">🔊 Ses: açık</button>
+      <button id="pa-center">🎮 Oyun Merkezine dön</button>
+      <button id="pa-home">🏠 Oyunun başlangıcına dön</button>
+      <p class="keys">Esc: menüyü aç/kapat · İlerlemen (bulunan parçalar) kaydedilir</p>
+    </div>
+  </div>
+
   <!-- Karne -->
   <div id="karne" class="overlay hidden">
     <div id="karne-card">
@@ -132,6 +149,6 @@
   </div>
 
   <div id="fade"></div>
-  <script type="module" src="js/main.js?v=45"></script>
+  <script type="module" src="js/main.js?v=48"></script>
 </body>
 </html>

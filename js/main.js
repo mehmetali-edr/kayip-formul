@@ -1035,6 +1035,31 @@ function openKarne(scope = 'all') {
 $('kr-close').onclick = () => { show('karne', false); mode = karneBack === 'karne' ? 'walk' : karneBack; };
 $('btn-karne').onclick = () => { if (mode === 'walk') openKarne('all'); };
 
+
+/* ---------- Oyun Merkezi'ne dönüş (matematik / coğrafya / biyoloji birleşik proje) ---------- */
+const HOME_URL = 'https://karma-oyun-merkezi.vercel.app/';
+function goHome() {
+  try { window.parent !== window && window.parent.postMessage({ type: 'kayip-formul:home' }, '*'); } catch (e) { /* yok say */ }
+  try { window.top.location.href = HOME_URL; } catch (e) { window.location.href = HOME_URL; }
+}
+['t-home', 'btn-home', 'pa-center'].forEach((id) => { const el = $(id); if (el) el.onclick = () => { sfx('click'); goHome(); }; });
+/* ---------- Duraklat menüsü ---------- */
+function openPause() {
+  if (mode !== 'walk') return;
+  mode = 'pause'; show('pause'); show('prompt', false);
+  const names = { hub: 'Zaman Makinesi · 2157', bagdat: 'Bağdat · 820', misir: 'Mısır · MÖ 2500', iskenderiye: 'İskenderiye · MÖ 240' };
+  $('pa-where').textContent = '📍 ' + (names[worldName] || '');
+  show('pa-hub', worldName !== 'hub');
+  $('pa-sound').textContent = muted ? '🔇 Ses: kapalı' : '🔊 Ses: açık';
+}
+function closePause() { if (mode !== 'pause') return; show('pause', false); mode = 'walk'; }
+$('btn-hub').onclick = () => { if (mode !== 'walk' || worldName === 'hub') return; sfx('click'); warp('hub', () => setWorld('hub'), () => {}); };
+$('btn-menu').onclick = () => { sfx('click'); if (mode === 'walk') openPause(); };
+$('pa-resume').onclick = closePause;
+$('pa-hub').onclick = () => { show('pause', false); mode = 'walk'; warp('hub', () => setWorld('hub'), () => {}); };
+$('pa-karne').onclick = () => { show('pause', false); mode = 'walk'; openKarne('all'); };
+$('pa-sound').onclick = () => { muted = !muted; if (amb && ac) amb.g.gain.setTargetAtTime(muted ? 0 : 1, ac.currentTime, 0.15); $('pa-sound').textContent = muted ? '🔇 Ses: kapalı' : '🔊 Ses: açık'; };
+$('pa-home').onclick = () => { location.reload(); };
 function result(title, text, btn, cb, reviewScope = null) {
   mode = 'result';
   $('rs-title').textContent = title; $('rs-text').innerText = text; $('rs-btn').textContent = btn;
@@ -2110,6 +2135,7 @@ function withAtmosphere(name) {
 function setWorld(name) {
   worldName = name;
   try { ambience(name); } catch (e) { /* ses yoksa sorun değil */ }
+  show('btn-hub', name !== 'hub');
   Object.entries(worlds).forEach(([k, w]) => (w.group.visible = k === name));
   const w = worlds[name];
   player.position.copy(w.spawn); player.rotation.y = Math.PI;
@@ -2153,6 +2179,8 @@ addEventListener('keydown', (e) => {
     else if ((k === 'enter' || k === ' ') && qz.locked) $('qz-next').click();
     return;
   }
+  if (mode === 'pause' && (k === 'escape' || k === 'p')) { closePause(); return; }
+  if (k === 'escape' && mode === 'walk') { openPause(); return; }
   if (mode === 'karne' && (k === 'escape' || k === 'k')) { $('kr-close').click(); return; }
   if (k === 'k' && mode === 'walk') { openKarne('all'); return; }
   if (k === 'e' || k === ' ' || k === 'enter') {

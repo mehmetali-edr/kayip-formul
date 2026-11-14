@@ -287,3 +287,26 @@ button.big { padding: 13px 30px; font-size: 18px; font-weight: 600; background: 
 #kr-practice { display: block; width: 100%; margin-top: 18px; padding: 16px; border-radius: 16px; font-size: 18px; font-weight: 800; color: #04201d; background: linear-gradient(160deg, #ffe08a, #ffb347); border: 2px solid #fff0b8; box-shadow: 0 5px 0 #8a5a12, 0 0 30px rgba(255,200,80,.35); animation: tBtn 2.4s ease-in-out infinite; }
 #kr-practice small { font-weight: 600; opacity: .75; }
 #kr-practice:hover { transform: translateY(-2px); } #kr-practice:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5a12; }
+
+/* ===== Menü ===== */
+#btn-menu { pointer-events: auto; padding: 8px 14px; border-radius: 10px; font-weight: 700; background: rgba(8,14,32,.7); border: 1px solid rgba(53,208,192,.6); color: #7ff6e8; margin-right: auto; margin-left: 8px; }
+#btn-menu:hover { border-color: #ffe08a; color: #ffe08a; }
+#pause { z-index: 45; background: radial-gradient(circle at 50% 40%, rgba(8,16,40,.8), rgba(2,4,12,.94)); }
+#pause-card { width: min(420px, 92%); padding: 28px 28px 22px; border-radius: 24px; text-align: center; background: linear-gradient(160deg, #15295a, #0a1332); border: 2px solid #35d0c0; box-shadow: 0 0 0 5px rgba(53,208,192,.12), 0 0 60px rgba(53,208,192,.3), 0 24px 60px rgba(0,0,0,.6); animation: tIn .4s cubic-bezier(.2,.8,.2,1); }
+#pa-sub { letter-spacing: 6px; font-size: 12px; color: #35d0c0; }
+#pause-card h1 { font-size: 36px; margin: 4px 0 6px; }
+#pa-where { color: #b9cbe8; margin-bottom: 18px; font-size: 14px; }
+#pause-card button { display: block; width: 100%; margin-top: 10px; padding: 13px; border-radius: 14px; font-size: 17px; font-weight: 700; color: #fff; background: linear-gradient(160deg, #3556b0, #213d86); border: 2px solid #7f9fe8; box-shadow: 0 4px 0 #0c1840; }
+#pause-card button:hover { border-color: #ffd36a; transform: translateY(-2px); } #pause-card button:active { transform: translateY(2px); box-shadow: 0 1px 0 #0c1840; }
+#pause-card #pa-resume { color: #04201d; background: linear-gradient(160deg, #7ff6e8, #2cc8b6); border-color: #c9fff8; box-shadow: 0 5px 0 #0d6b60; margin-top: 0; }
+#pause-card .keys { margin-top: 16px; }
+
+#btn-hub { pointer-events: auto; padding: 8px 14px; border-radius: 10px; font-weight: 800; color: #04201d; background: linear-gradient(160deg, #7ff6e8, #2cc8b6); border: 2px solid #c9fff8; box-shadow: 0 3px 0 #0d6b60; margin-left: 12px; }
+#btn-hub:hover { transform: translateY(-2px); } #btn-hub:active { transform: translateY(2px); box-shadow: 0 1px 0 #0d6b60; }
+
+/* ===== Oyun Merkezi butonu ===== */
+.home-btn { pointer-events: auto; font-weight: 800; border-radius: 10px; background: linear-gradient(160deg, #ffe08a, #ffb347); color: #3a2400; border: 2px solid #fff0b8; box-shadow: 0 3px 0 #8a5a12; padding: 8px 14px; }
+.home-btn:hover { transform: translateY(-2px); } .home-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a5a12; }
+#t-home { position: absolute; left: 18px; top: 18px; z-index: 3; }
+#btn-home { margin-left: 8px; }
+#pause-card #pa-center { color: #3a2400; background: linear-gradient(160deg, #ffe08a, #ffb347); border-color: #fff0b8; box-shadow: 0 4px 0 #8a5a12; }

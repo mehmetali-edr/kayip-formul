@@ -1,0 +1,16 @@
+# Yayına gerekmeyenler
+_yedek_*.js
+*.zip
+probe.txt
+test*.mjs
+package.json
+oyun.html
+js/main_v20.js
+kayip-formul/
+assets/hdri/magalies_field_sunset_2k.exr
+assets/tex/**/*.blend
+assets/tex/**/*.usdc
+assets/tex/**/*.mtlx
+assets/tex/**/*.tres
+assets/tex/**/*Displacement*
+assets/tex/**/*NormalDX*

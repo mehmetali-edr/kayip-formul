@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kayıp Formül — Zaman Yolculuğu</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="era-label">Zaman Makinesi</div>
+    <button id="btn-karne" title="Karne (K)">📋 Karne</button><div id="parts"><span data-p="bagdat">Cebir</span><span data-p="misir">Oran</span><span data-p="iskenderiye">Geometri</span></div>
+  </div>
+  <div id="prompt" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+
+  <!-- Başlangıç -->
+  <div id="title" class="overlay">
+    <div class="card">
+      <div class="logo">∑ ∫ π √</div>
+      <h1>KAYIP FORMÜL</h1>
+      <p class="tag">Matematik silindi. Zaman makinesi susuyor.<br />Üç çağa yolculuk et, formülü geri getir.</p>
+      <button id="btn-start" class="big">Yolculuğa Başla</button>
+      <p class="keys">WASD / Ok tuşları: yürü &nbsp;·&nbsp; E: konuş / kullan &nbsp;·&nbsp; Boşluk: devam</p>
+    </div>
+  </div>
+
+  <!-- Hikâye -->
+  <div id="story" class="overlay hidden">
+    <div class="card"><p id="story-text"></p><button id="btn-story" class="big">Devam ▸</button></div>
+  </div>
+
+  <!-- Sinematik şeritler -->
+  <div id="lb"><div class="bar top"></div><div class="bar bot"></div></div>
+
+  <!-- Giriş sinematiği -->
+  <div id="cine" class="hidden">
+    <canvas id="cine-fx"></canvas>
+    <div id="cine-flash"></div>
+    <div id="cine-title"></div>
+    <div id="cine-label"></div>
+    <p id="cine-cap"></p>
+    <button id="cine-skip">Atla ▸▸</button>
+    <div id="cine-hint">Boşluk / tıkla: sonraki</div>
+  </div>
+
+  <div id="keys-card" class="hidden"><b>KONTROLLER</b><div><kbd>W A S D</kbd> yürü</div><div><kbd>Fare sürükle</kbd> kamera · <kbd>tekerlek</kbd> yakınlaş</div><div><kbd>E</kbd> konuş / kullan · <kbd>Boşluk</kbd> devam</div><div><kbd>K</kbd> karne · <kbd>M</kbd> ses · <kbd>F</kbd> FPS</div></div>
+
+  <!-- Çağa varış başlığı -->
+  <div id="arrive" class="hidden"><div id="a-sub"></div><div id="a-title"></div><div id="a-topic"></div></div>
+
+  <!-- Diyalog -->
+  <div id="dialog" class="hidden">
+    <div id="dlg-portrait"><div class="aura"></div><img id="dlg-img" alt="" /></div>
+    <div id="dlg-box">
+      <div id="dlg-name"></div>
+      <div id="dlg-text"></div>
+      <div id="dlg-next">Devam: Boşluk / E / Tıkla ▸</div>
+    </div>
+  </div>
+
+  <!-- Terazi paneli -->
+  <div id="puzzle" class="hidden">
+    <div id="pz-title">⚖️ DENGEYİ KUR</div><div id="pz-top"><span id="pz-level"></span><span id="pz-moves"></span></div>
+    <div id="pz-eqbox"><div id="pz-eq"></div><div id="pz-fx"></div></div>
+    <div id="pz-tip"></div>
+    <div id="pz-stepper"><button id="n-minus">−</button><span id="n-val">1</span><button id="n-plus">+</button></div>
+    <div id="pz-ops">
+      <button id="op-c"><i>−n</i><span>Her iki taraftan <b>n</b> ağırlık çıkar</span></button>
+      <button id="op-x"><i>−nx</i><span>Her iki taraftan <b>n</b>·x çıkar</span></button>
+      <button id="op-d"><i>÷n</i><span>Her iki tarafı <b>n</b>'e böl</span></button>
+    </div>
+    <div id="pz-extra"><button id="pz-undo">↶ Geri al</button><button id="pz-hint">💡 İpucu</button><button id="pz-exit">Çık</button></div>
+    <div id="pz-win" class="hidden"><div id="pz-win-text"></div><button id="pz-next" class="big">Sonraki ▸</button></div>
+  </div>
+
+  <!-- Gölge paneli (Mısır) -->
+  <div id="shadow" class="hidden">
+    <div id="sh-top"><span id="sh-level"></span><span id="sh-tries"></span></div>
+    <div id="sh-given"></div>
+    <div id="sh-eq"></div>
+    <div id="sh-tip"></div>
+    <div id="sh-input"><label for="sh-h">Yapının boyu H =</label><input id="sh-h" type="number" min="1" max="16" step="0.5" /><span>arşın</span></div>
+    <div id="sh-msg"></div>
+    <button id="sh-check" class="big">Yapıyı dik</button>
+    <div id="sh-extra"><button id="sh-hint">💡 İpucu</button><button id="sh-exit">Çık</button></div>
+    <div id="sh-win" class="hidden"><div id="sh-win-text"></div><button id="sh-next" class="big">Sonraki ▸</button></div>
+  </div>
+
+  <!-- Sınav -->
+  <div id="quiz" class="overlay hidden">
+    <div id="qz-card">
+      <div class="qz-top"><span id="qz-era"></span><div id="qz-dots"></div><span id="qz-score"></span></div>
+      <div id="qz-topicbar"><span id="qz-topic"></span><span id="qz-streak"></span></div>
+      <h2 id="qz-q"></h2>
+      <div id="qz-opts"></div>
+      <div id="qz-note" class="hidden"></div>
+      <div id="qz-foot"><span id="qz-hint">Klavye: 1 · 2 · 3 · 4</span><button id="qz-next" class="big hidden">Devam ▸</button></div>
+    </div>
+  </div>
+
+  <!-- Sonuç -->
+  <div id="result" class="overlay hidden">
+    <div class="card"><h1 id="rs-title"></h1><p id="rs-text"></p><div class="rs-row"><button id="rs-review" class="hidden">📋 Çözümleri ve karneyi gör</button><button id="rs-btn" class="big">Tamam</button></div></div>
+  </div>
+
+  <!-- Karne -->
+  <div id="karne" class="overlay hidden">
+    <div id="karne-card">
+      <div id="kr-head"><div><div id="kr-sub">KAYIP FORMÜL</div><h1 id="kr-title">Öğrenme Karnesi</h1></div><button id="kr-close">Kapat ✕</button></div>
+      <div id="kr-body"></div>
+    </div>
+  </div>
+
+  <!-- Işınlanma -->
+  <div id="warp" class="hidden">
+    <canvas id="warp-c"></canvas>
+    <div id="warp-text"><div id="warp-year"></div><div id="warp-title"></div><div id="warp-line"></div></div>
+  </div>
+
+  <div id="fade"></div>
+  <script type="module" src="js/main.js?v=41"></script>
+</body>
+</html>

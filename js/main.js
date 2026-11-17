@@ -7,7 +7,7 @@ import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import * as TX from './textures.js?v=20';
-import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=54';
+import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=58';
 import { ERAS, STORY, BALANCE_LEVELS, QUIZ_BAGDAT, QUIZ_MISIR, SHADOW_LEVELS, AHMES, ANGLE_LEVELS, QUIZ_ISKENDERIYE, ERATO, FINALE, PASS_SCORE, HAREZMI } from './data.js?v=20';
 import { apply, isSolved, solve, par, fmt, stepText, stars } from './balance.js?v=20';
 
@@ -142,6 +142,8 @@ const worlds = {};
 const player = makePlayer();
 scene.add(player);
 const keys = new Set();
+const joy = { x: 0, y: 0 };
+const IS_TOUCH = (matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || /[?&]touch/.test(location.search)) && !/[?&]notouch/.test(location.search);
 
 /* ---------- Gerçek 3D karakter modelleri (assets/models/*.glb) ----------
    Dosya yoksa ya da yüklenemezse kodla çizilen karakter kalır. */
@@ -2209,6 +2211,51 @@ $('dialog').onclick = () => { if (mode === 'dialog') dlgAdvance(); };
   el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
   el.addEventListener('wheel', (e) => { if (mode === 'walk' || mode === 'dialog') { camDist = THREE.MathUtils.clamp(camDist + Math.sign(e.deltaY) * 1.2, 6, 22); e.preventDefault(); } }, { passive: false });
 }
+/* ---------- Mobil / dokunmatik kontroller ---------- */
+if (IS_TOUCH) {
+  document.body.classList.add('touch');
+  const ui = $('touch-ui'), zone = $('joy-zone'), base = $('joy'), knob = $('joy-knob');
+  const R = 56; let jid = null, ox = 0, oy = 0;
+  const setJoy = (dx, dy) => {
+    const d = Math.hypot(dx, dy), k = d > R ? R / d : 1; dx *= k; dy *= k;
+    knob.style.transform = `translate(${dx}px,${dy}px)`;
+    const m = Math.hypot(dx, dy) / R; joy.x = m < 0.12 ? 0 : dx / R; joy.y = m < 0.12 ? 0 : dy / R;
+  };
+  const endJoy = () => { jid = null; joy.x = joy.y = 0; knob.style.transform = ''; base.classList.remove('on', 'free'); base.style.left = base.style.top = ''; };
+  zone.addEventListener('pointerdown', (e) => {
+    if (jid !== null) return; jid = e.pointerId; try { zone.setPointerCapture(jid); } catch (_) {}
+    const r = zone.getBoundingClientRect(); ox = e.clientX; oy = e.clientY;
+    base.style.left = (ox - r.left) + 'px'; base.style.top = (oy - r.top) + 'px'; base.classList.add('on', 'free'); setJoy(0, 0); e.preventDefault();
+  });
+  zone.addEventListener('pointermove', (e) => { if (e.pointerId === jid) setJoy(e.clientX - ox, e.clientY - oy); });
+  zone.addEventListener('pointerup', (e) => { if (e.pointerId === jid) endJoy(); });
+  zone.addEventListener('pointercancel', (e) => { if (e.pointerId === jid) endJoy(); });
+  zone.addEventListener('lostpointercapture', (e) => { if (e.pointerId === jid) endJoy(); });
+  const tap = (id, fn) => { const b = $(id); b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); fn(); }); };
+  tap('tb-act', () => { if (mode === 'walk' && current) current.action(); });
+  tap('tb-zin', () => { camDist = THREE.MathUtils.clamp(camDist - 1.5, 6, 22); });
+  tap('tb-zout', () => { camDist = THREE.MathUtils.clamp(camDist + 1.5, 6, 22); });
+  // iki parmakla kamera yakınlaştır (pinch) — kanvas üstünde
+  const pts = new Map(); let pd = 0;
+  const cv = renderer.domElement;
+  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, [e.clientX, e.clientY]); if (pts.size === 2) { const [a, b] = [...pts.values()]; pd = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+  cv.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 2 && (mode === 'walk' || mode === 'dialog')) { const [a, b] = [...pts.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); camDist = THREE.MathUtils.clamp(camDist - (d - pd) * 0.03, 6, 22); pd = d; }
+  });
+  const up = (e) => pts.delete(e.pointerId); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  // arayüz sadece yürüme modunda görünür
+  let lastShown = null;
+  setInterval(() => {
+    const on = mode === 'walk'; if (on !== lastShown) { lastShown = on; show('touch-ui', on); if (!on) endJoy(); }
+    const rot = on && innerHeight > innerWidth && !sessionStorage.getItem('kf_rot'); show('rot-hint', rot);
+  }, 200);
+  $('rot-hint').onclick = () => { try { sessionStorage.setItem('kf_rot', '1'); } catch (_) {} show('rot-hint', false); };
+  // yardım kartı metni
+  const kc = $('keys-card'); if (kc) kc.innerHTML = '<b>KONTROLLER</b><div><kbd>Sol başparmak</kbd> yürü</div><div><kbd>Sağ tarafı sürükle</kbd> kamera · <kbd>＋ －</kbd> yakınlaş</div><div><kbd>E</kbd> düğmesi: konuş / kullan</div>';
+  $('cine-hint').textContent = 'Dokun: sonraki'; $('dlg-next').textContent = 'Devam: dokun ▸';
+  { const tk = document.querySelector('#t-box .keys'); if (tk) tk.innerHTML = '🔊 Ses açık önerilir &nbsp;·&nbsp; Sol başparmak: yürü &nbsp;·&nbsp; E düğmesi: konuş / kullan'; }
+}
 /* ---------- Giriş sinematiği ---------- */
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const CINE_SHOTS = [
@@ -2291,7 +2338,8 @@ function updateInteract() {
     const d = Math.hypot(it.pos.x - player.position.x, it.pos.z - player.position.z);
     if (d < it.r && d < best) { best = d; current = it; }
   }
-  if (current) { $('prompt').textContent = current.label(); show('prompt'); } else show('prompt', false);
+  if (current) { $('prompt').textContent = IS_TOUCH ? current.label().replace(/^E:\s*/, '') : current.label(); show('prompt'); } else show('prompt', false);
+  if (IS_TOUCH) show('tb-act', !!current);
 }
 
 /* ---------- Ana döngü ---------- */
@@ -2351,10 +2399,12 @@ function loop() {
     const v = new THREE.Vector3(
       (keys.has('d') || keys.has('arrowright') ? 1 : 0) - (keys.has('a') || keys.has('arrowleft') ? 1 : 0), 0,
       (keys.has('s') || keys.has('arrowdown') ? 1 : 0) - (keys.has('w') || keys.has('arrowup') ? 1 : 0));
+    let spd = 1;
+    if (v.lengthSq() === 0 && (joy.x || joy.y)) { v.set(joy.x, 0, joy.y); spd = Math.min(1, v.length()); }
     if (v.lengthSq() > 0) {
       v.normalize();
       { const c = Math.cos(camYaw), sn = Math.sin(camYaw), vx = v.x * c + v.z * sn, vz = -v.x * sn + v.z * c; v.set(vx, 0, vz); }
-      player.position.addScaledVector(v, 5.2 * dt);
+      player.position.addScaledVector(v, 5.2 * dt * (0.45 + 0.55 * spd));
       player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, Math.atan2(v.x, v.z), 0.25);
       player.position.y = Math.abs(Math.sin(t * 12)) * 0.06;
     } else player.position.y = 0;

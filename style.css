@@ -346,3 +346,42 @@ body.touch #parts { gap: 4px; }
 }
 @media (max-height: 460px) { body.touch #t-home { top: 8px; left: 8px; padding: 6px 10px; font-size: 12px; } body.touch #t-box { margin-top: 18px; } }
 @media (max-height: 460px) { body.touch #dlg-box { min-height: 0 !important; padding: 18px 20px 10px 30px; } body.touch #dlg-portrait { align-self: flex-end; } }
+@media (max-height: 460px) { body.touch #dlg-text { min-height: 40px; line-height: 1.45; } }
+
+/* ===== Kısa ekran (yatay telefon): terazi / gölge / açı panelleri kompakt ===== */
+@media (max-height: 520px) and (orientation: landscape) {
+  #puzzle, #shadow { right: 6px; left: auto; top: auto; bottom: 6px; transform: none; width: min(300px, 42vw); max-height: calc(100vh - 46px); overflow-y: auto; padding: 10px 12px 10px; border-radius: 16px; border-width: 2px; }
+  #puzzle::before, #shadow::before { display: none; }
+  #pz-title { display: none; }
+  #pz-top, #sh-top { padding: 3px 10px; font-size: 12px; }
+  #pz-eqbox { margin: 6px 0 4px; padding: 8px 6px; border-width: 2px; border-radius: 12px; }
+  #pz-eq { font-size: 28px; gap: 8px; }
+  #pz-tip, #sh-tip { font-size: 11.5px; line-height: 1.3; min-height: 0; margin: 2px 0; }
+  #pz-stepper { margin: 4px 0; padding: 3px; gap: 12px; }
+  #pz-stepper button { width: 34px; padding: 2px; font-size: 18px; }
+  #n-val { font-size: 18px; }
+  #pz-ops { gap: 5px; }
+  #pz-ops button { padding: 5px 8px; gap: 8px; border-radius: 10px; font-size: 12px; line-height: 1.2; box-shadow: 0 3px 0 #0c1840; }
+  #pz-ops i { flex: 0 0 42px; padding: 3px 0; font-size: 15px; border-radius: 8px; }
+  #pz-extra, #sh-extra { margin-top: 6px; gap: 5px; }
+  #pz-extra button, #sh-extra button { padding: 5px 4px; font-size: 12px; box-shadow: 0 3px 0 #0c1840; }
+  #pz-win, #sh-win { margin-top: 6px; padding-top: 6px; }
+  #pz-win-text, #sh-win-text { font-size: 14px; margin-bottom: 6px; line-height: 1.35; }
+  #pz-next, #sh-next, #sh-check { padding: 7px 10px; font-size: 14px; box-shadow: 0 3px 0 #0d5c54; }
+  #sh-given { margin-top: 5px; padding: 6px 9px; font-size: 12px; line-height: 1.4; }
+  #sh-eq { margin: 5px 0 3px; padding: 7px 6px; font-size: 22px; border-width: 2px; }
+  #sh-input { margin: 5px 0; gap: 6px; font-size: 12px; }
+  #sh-input input { width: 70px; font-size: 18px; padding: 3px; }
+  #sh-msg { min-height: 0; font-size: 12px; margin-bottom: 4px; }
+}
+/* ===== Dikey telefon: paneller altta, terazi üstte görünsün ===== */
+@media (max-width: 640px) and (orientation: portrait) {
+  #puzzle, #shadow { top: auto; bottom: 8px; right: 50%; transform: translateX(50%); width: min(430px, 96vw); max-height: 54vh; overflow-y: auto; padding: 12px 14px; }
+  #pz-title { display: none; }
+  #pz-eqbox { margin: 8px 0 4px; padding: 10px 6px; }
+  #pz-eq { font-size: 32px; }
+  #pz-tip, #sh-tip { min-height: 0; font-size: 12.5px; }
+  #pz-ops button { padding: 7px 10px; }
+  #pz-ops { gap: 6px; }
+  #sh-eq { font-size: 24px; padding: 8px 6px; }
+}

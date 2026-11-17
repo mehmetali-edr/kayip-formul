@@ -7,7 +7,7 @@ import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import * as TX from './textures.js?v=20';
-import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=58';
+import { makeHarezmi, makePlayer, makeScribe, makeScholar } from './characters.js?v=60';
 import { ERAS, STORY, BALANCE_LEVELS, QUIZ_BAGDAT, QUIZ_MISIR, SHADOW_LEVELS, AHMES, ANGLE_LEVELS, QUIZ_ISKENDERIYE, ERATO, FINALE, PASS_SCORE, HAREZMI } from './data.js?v=20';
 import { apply, isSolved, solve, par, fmt, stepText, stars } from './balance.js?v=20';
 
